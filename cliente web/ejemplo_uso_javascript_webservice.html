@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ejemplo uso WebService desde JavaScript</title>
+	<meta charset="UTF-8" />
+</head>
+
+<body>
+<div style="margin-bottom:2em">Número de departamento: <input type="number" id="num" /> <button onclick="buscar()">Buscar</button></div>
+<div><img id="img_espera" style="display:none" src="espera.gif" width="40px" ><div id="salida" ></div></div>
+	
+<script>
+function buscar(){
+    var numDepartamentoABuscar = document.getElementById("num").value;
+	if (numDepartamentoABuscar.length==0) {
+	  alert("Debe introducir un número de departamento");
+	  return;
+	}
+	
+	var xmlhttp = new XMLHttpRequest(); // Objeto para realizar la petición.
+	var url = "http://localhost/web_service/departamentos.php?id=" + encodeURI(numDepartamentoABuscar); // Origen de los datos JSON
+
+	xmlhttp.onreadystatechange = function() { // Se indica que hacer al recibir los datos
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			var datos = JSON.parse(xmlhttp.responseText); // Creamos las variables a partir del JSON recibido
+			procesaDatos(numDepartamentoABuscar,datos);
+		}
+	};
+	
+	document.getElementById("img_espera").style.display="inline";
+	
+	xmlhttp.open("GET", url, true); // Indicamos tipo de petición, origen de los datos y modo asíncrono
+	xmlhttp.send(); // Enviamos la petición, abrimos el fichero.
+}
+
+
+function procesaDatos(numDepartamento,datos) { // Aquí es donde se debe personalizar el texto
+    console.log(datos);
+	document.getElementById("img_espera").style.display="none";
+	var divsalida = document.getElementById("salida");
+	var departamentos = datos.data;
+
+	if (departamentos==null) {
+	  divsalida.innerHTML = "No hay resultados de búsqueda para el departamento: " + numDepartamento;
+	  return;
+	}
+	if (datos.status=="success") {
+		var departamentos = datos.data;
+		var mostrarResultado='<table border="1" ><tr><th>Departamentos</th></tr>';
+		for (var i=0; i<departamentos.length; i++) { mostrarResultado = mostrarResultado + '<tr><td>' + departamentos[i].nombre + '</td></tr>'; }
+		mostrarResultado = mostrarResultado + '</table>';
+		divsalida.innerHTML = mostrarResultado;
+	}
+	else {
+	  console.log("Error en el webservice");
+	}
+}
+</script>
+</body>
+</html>
